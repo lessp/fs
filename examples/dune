@@ -1,0 +1,4 @@
+(executable
+ (public_name fs)
+ (name main)
+ (libraries fs))
