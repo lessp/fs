@@ -1,10 +1,9 @@
 module Error = struct
-  type common_error =
-    [ `File_not_found of string | `File_already_exists of string ]
-
+  type file_not_found = [ `File_not_found of string ]
+  type file_already_exists = [ `File_already_exists of string ]
   type read_error = [ `Error_reading_file of string ]
   type write_error = [ `Error_writing_to_file of string ]
-  type t = [ read_error | write_error | common_error ]
+  type t = [ read_error | write_error | file_not_found | file_already_exists ]
 
   let to_string e =
     match e with
@@ -16,14 +15,7 @@ module Error = struct
 end
 
 module File = struct
-  type readonly
-  type writeable
-
-  type 'mode t = {
-    name : string;
-    content : string;
-    handle : [ `Ic of in_channel | `Oc of out_channel ] option;
-  }
+  type t = { name : string; content : string }
 
   let get_name { name; _ } = name
   let get_content { content; _ } format = match format with `String -> content
@@ -31,10 +23,10 @@ module File = struct
   let read file =
     try
       let content = In_channel.with_open_bin file In_channel.input_all in
-      Ok { content; name = file; handle = None }
+      Ok { content; name = file }
     with _exn -> Error (`Error_reading_file file)
 
-  let read_as_string file =
+  let read_to_string file =
     match read file with Ok { content; _ } -> Ok content | Error e -> Error e
 
   let write name ~contents =
@@ -44,25 +36,12 @@ module File = struct
              match contents with `String s -> Out_channel.output_string oc s))
     with _exn -> Error (`Error_writing_to_file name)
 
-  let open_file file ~mode =
-    match mode with
-    | `Readonly ->
-        Ok
-          {
-            name = file;
-            handle = Some (`Ic (In_channel.open_gen [ Open_rdonly ] 755 file));
-            content = "";
-          }
-    | `Writeable ->
-        Ok
-          {
-            name = file;
-            content = "";
-            handle =
-              Some
-                (`Oc
-                  (Out_channel.open_gen
-                     [ Open_wronly; Open_append; Open_creat ]
-                     755 file));
-          }
-end [@warning "-69"]
+  let create name ?(contents = `String "") ?(overwrite = false) () =
+    if (not overwrite) && Sys.file_exists name then
+      Error (`File_already_exists name)
+    else write name ~contents
+
+  let delete name =
+    if Sys.file_exists name then Ok (Sys.remove name)
+    else Error (`File_not_found name)
+end

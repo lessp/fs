@@ -1,26 +1,20 @@
 (lang dune 3.10)
-
 (name fs)
-
 (generate_opam_files true)
-
 (source
- (github username/reponame))
+ (github lessp/fs))
+(authors "lessp")
+(maintainers "lessp")
+(license MIT)
 
-(authors "Author Name")
-
-(maintainers "Maintainer Name")
-
-(license LICENSE)
-
-(documentation https://url/to/documentation)
+(documentation https://github.com/lessp/fs)
 
 (package
  (name fs)
- (synopsis "A short synopsis")
- (description "A longer description")
+ (synopsis "A simple file system module")
+ (description "Easy to use file system module")
  (depends ocaml dune)
  (tags
-  (topics "to describe" your project)))
+  (topics fs ocaml file-system)))
 
 ; See the complete stanza docs at https://dune.readthedocs.io/en/stable/dune-files.html#dune-project
