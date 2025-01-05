@@ -21,7 +21,7 @@ let () =
     | Error e -> Printf.printf "Error writing file: %s" (Fs.Error.to_string e)
 
 let () =
-    match File.read "my-test.txt" with
+    match File.read_to_string "my-test.txt" with
     | Ok contents -> Printf.printf "File contents: %s\n" contents
     | Error e -> Printf.printf "Error reading file: %s" (Fs.Error.to_string e)
     ;;
