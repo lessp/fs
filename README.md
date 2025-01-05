@@ -16,15 +16,15 @@ For a full list of examples, see the [`examples/`](./examples) directory.
 open Fs
 
 let () =
+    match File.write "my-test.txt" ~contents:(`String "Hello, world!") with
+    | Ok () -> Printf.printf "File written successfully\n"
+    | Error e -> Printf.printf "Error writing file: %s" (Fs.Error.to_string e)
+
+let () =
     match File.read "my-test.txt" with
     | Ok contents -> Printf.printf "File contents: %s\n" contents
     | Error e -> Printf.printf "Error reading file: %s" (Fs.Error.to_string e)
     ;;
-
-let () =
-    match File.write "my-test.txt" ~contents:(`String "Hello, world!") with
-    | Ok () -> Printf.printf "File written successfully\n"
-    | Error e -> Printf.printf "Error writing file: %s" (Fs.Error.to_string e)
 ;;
 ```
 
@@ -32,6 +32,7 @@ let () =
 
 - [ ] Add the ability to read a file into different formats
 - [ ] Add directory operations
+- [ ] Consider using `open_gen` to be able to specify flags for file operations
 
 ## License
 
