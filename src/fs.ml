@@ -15,19 +15,26 @@ module Error = struct
 end
 
 module File = struct
-  type 'content t = { name : string; content : 'content }
+  (* TODO: Support multiple content types *)
+  type t = { name : string; content : string }
 
   let get_name { name; _ } = name
-  let get_content { content; _ } format = match format with `String -> content
 
-  let read file =
+  let get_content { content; _ } ~(format : [ `String ]) =
+    match format with `String -> content
+
+  (* TODO: Support other formats *)
+  let read file ~(format : [ `String ]) =
+    let _ = format in
     try
       let content = In_channel.with_open_bin file In_channel.input_all in
       Ok { content; name = file }
     with _exn -> Error (`Error_reading_file file)
 
   let read_to_string file =
-    match read file with Ok { content; _ } -> Ok content | Error e -> Error e
+    match read file ~format:`String with
+    | Ok { content; _ } -> Ok content
+    | Error e -> Error e
 
   let write name ~contents =
     try

@@ -22,24 +22,27 @@ module File : sig
       ]}
   *)
 
-  val get_content : t -> [ `String ] -> string
+  val get_content : t -> format:[ `String ] -> string
   (** Returns the contents of the file. 
 
       Examples:
 
       {[
         let file = File.create "file.txt" ~contents:(`String "Hello, World!") () |> Result.get_ok in
-        print_endline (File.get_content file `String)
+        print_endline (File.get_content file ~format:`String)
       ]}
   *)
 
-  val read : string -> (t, [> Error.read_error | Error.file_not_found ]) result
+  val read :
+    string ->
+    format:[ `String ] ->
+    (t, [> Error.read_error | Error.file_not_found ]) result
   (** Reads the contents of a file. After reading, the file is closed. 
 
       Examples:
 
       {[
-        match File.read "file.txt" with
+        match File.read "file.txt" ~format:`String with
         | Ok file -> print_endline (File.get_content file `String)
         | Error e -> print_endline (Error.to_string e)
       ]} 
