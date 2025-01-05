@@ -65,7 +65,16 @@ module File : sig
 
   val write :
     string ->
-    contents:[ `String of string ] ->
+    contents:
+      [ `String of string
+      | `Bytes of bytes
+      | `Char of char
+      | `Byte of int
+      | `Substring of string * int * int
+      | `Bigarray of
+        (char, Bigarray.int8_unsigned_elt, Bigarray.c_layout) Bigarray.Array1.t
+        * int
+        * int ] ->
     (unit, [> Error.write_error | Error.file_not_found ]) result
   (** Writes content to a file. After writing the file is closed. 
 
@@ -80,7 +89,16 @@ module File : sig
 
   val create :
     string ->
-    ?contents:[ `String of string ] ->
+    ?contents:
+      [ `String of string
+      | `Bytes of bytes
+      | `Char of char
+      | `Byte of int
+      | `Substring of string * int * int
+      | `Bigarray of
+        (char, Bigarray.int8_unsigned_elt, Bigarray.c_layout) Bigarray.Array1.t
+        * int
+        * int ] ->
     ?overwrite:bool ->
     unit ->
     ( unit,

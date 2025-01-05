@@ -15,7 +15,7 @@ module Error = struct
 end
 
 module File = struct
-  type t = { name : string; content : string }
+  type 'content t = { name : string; content : 'content }
 
   let get_name { name; _ } = name
   let get_content { content; _ } format = match format with `String -> content
@@ -33,7 +33,13 @@ module File = struct
     try
       Ok
         (Out_channel.with_open_bin name (fun oc ->
-             match contents with `String s -> Out_channel.output_string oc s))
+             match contents with
+             | `String s -> Out_channel.output_string oc s
+             | `Bytes b -> Out_channel.output_bytes oc b
+             | `Char c -> Out_channel.output_char oc c
+             | `Byte i -> Out_channel.output_byte oc i
+             | `Substring (s, i, j) -> Out_channel.output_substring oc s i j
+             | `Bigarray (a, i, j) -> Out_channel.output_bigarray oc a i j))
     with _exn -> Error (`Error_writing_to_file name)
 
   let create name ?(contents = `String "") ?(overwrite = false) () =
