@@ -28,6 +28,11 @@ let () =
 ;;
 ```
 
+## Todo
+
+- [ ] Add the ability to read a file into different formats
+- [ ] Add directory operations
+
 ## License
 
 MIT
