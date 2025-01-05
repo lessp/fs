@@ -2,6 +2,12 @@
 
 FS exposes a simple filesystem interface for OCaml.
 
+## Installation
+
+```sh
+opam pin fs https://github.com/lessp/fs.git
+```
+
 ## Example
 
 For a full list of examples, see the [`examples/`](./examples) directory.
