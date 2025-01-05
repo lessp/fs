@@ -37,3 +37,26 @@ let () =
   match File.delete "my-test.txt" with
   | Ok () -> Printf.printf "File deleted successfully\n"
   | Error e -> Printf.printf "Error deleting file: %s" (Error.to_string e)
+
+(* Bytes *)
+let () =
+  let () =
+    match
+      File.write "my-test.txt"
+        ~contents:(`Bytes (Bytes.of_string "Hello, World, in bytes!"))
+    with
+    | Ok () -> Printf.printf "File written successfully\n"
+    | Error e -> Printf.printf "Error writing file: %s" (Error.to_string e)
+  in
+
+  let () =
+    match File.read "my-test.txt" ~format:`String with
+    | Ok f ->
+        Printf.printf "File read successfully: %s\n" (File.get_name f);
+        Printf.printf "File contents: %s\n" (File.get_content f ~format:`String)
+    | Error e -> Printf.printf "%s\n" (Error.to_string e)
+  in
+
+  match File.delete "my-test.txt" with
+  | Ok () -> Printf.printf "File deleted successfully\n"
+  | Error e -> Printf.printf "Error deleting file: %s" (Error.to_string e)
