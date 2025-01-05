@@ -28,12 +28,6 @@ let () =
 ;;
 ```
 
-## Todo
-
-- [ ] Add the ability to read a file into different formats
-- [ ] Add directory operations
-- [ ] Consider using `open_gen` to be able to specify flags for file operations
-
 ## License
 
 MIT
