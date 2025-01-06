@@ -248,7 +248,7 @@ module Dir : sig
     -> unit
     -> (entry list, [> Error.dir_not_found | Error.read_error ]) result
 
-  (** Deletes a directory. If recursive is true, deletes all contents recursively.
+  (** Deletes a directory. If recursive is true (defaults to false), deletes all contents recursively.
 
       Examples:
 
