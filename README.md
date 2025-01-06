@@ -2,6 +2,18 @@
 
 `Fs` aims to expose a simple filesystem interface for OCaml.
 
+## Table of Contents
+
+- [Installation](#installation)
+- [Example](#example)
+  - [File](#file)
+    - [Create a file](#create-a-file)
+    - [Read a file](#read-a-file)
+  - [Dir](#dir)
+    - [Create a directory](#create-a-directory) 
+    - [List a directory](#list-a-directory)
+- [License](#license)
+
 ## Installation
 
 ```sh
