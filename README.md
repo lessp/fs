@@ -1,3 +1,6 @@
+> [!NOTE]  
+> Exploratory, API subject to change. Suggestions and PRs are always welcome.
+
 # Fs
 
 `Fs` aims to expose a simple filesystem interface for OCaml.
