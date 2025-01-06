@@ -40,10 +40,26 @@ let test_files () =
     | Error e -> Printf.printf "Error: %s\n" (File.Error.to_string e)
   in
 
-  (* Read the file contents *)
+  (* Read the file contents as bytes *)
   let () =
-    match File.read_to_string "example.txt" with
-    | Ok content -> Printf.printf "File content: %s\n" content
+    match File.read "example.txt" ~format:Bytes with
+    | Ok file ->
+      Printf.printf "File content: %s\n" (Bytes.to_string (File.get_content file))
+    | Error e -> Printf.printf "Error: %s\n" (File.Error.to_string e)
+  in
+
+  (* Write lines to a file *)
+  let () =
+    match File.write "example.txt" ~contents:(`String "Hello\n ,World\n!") with
+    | Ok () -> Printf.printf "File written successfully\n"
+    | Error e -> Printf.printf "Error: %s\n" (File.Error.to_string e)
+  in
+
+  (* Read the file contents as lines *)
+  let () =
+    match File.read "example.txt" ~format:Lines with
+    | Ok file ->
+      List.iter (fun line -> Printf.printf "Line: %s\n" line) (File.get_content file)
     | Error e -> Printf.printf "Error: %s\n" (File.Error.to_string e)
   in
 

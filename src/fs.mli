@@ -14,7 +14,14 @@ module File : sig
     val to_string : t -> string
   end
 
-  type t
+  type _ format =
+    | String : string format
+    | Bytes : bytes format
+    | Char : char option format
+    | Byte : int option format
+    | Lines : string list format
+
+  type 'a t
 
   (** Returns the name of the file.
 
@@ -24,7 +31,7 @@ module File : sig
         let file = File.create "file.txt" () |> Result.get_ok in
         print_endline (File.get_name file)
       ]} *)
-  val get_name : t -> string
+  val get_name : 'a t -> string
 
   (** Returns the contents of the file.
 
@@ -36,7 +43,7 @@ module File : sig
         in
         print_endline (File.get_content file ~format:`String)
       ]} *)
-  val get_content : t -> format:[ `String ] -> string
+  val get_content : 'a t -> 'a
 
   (** Reads the contents of a file. After reading, the file is closed.
 
@@ -49,8 +56,8 @@ module File : sig
       ]} *)
   val read
     :  string
-    -> format:[ `String ]
-    -> (t, [> Error.read_error | Error.file_not_found ]) result
+    -> format:'a format
+    -> ('a t, [> Error.read_error | Error.file_not_found ]) result
 
   (** Reads the contents of a file as a string. After reading the file is closed.
 
@@ -175,7 +182,7 @@ module Dir : sig
 
   type t
   type entry =
-    | File of File.t
+    | File : 'a File.t -> entry
     | Directory of t
 
   (** Returns the name of the directory.

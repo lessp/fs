@@ -20,31 +20,53 @@ module File = struct
     ;;
   end
 
-  (* TODO: Support multiple content types *)
-  type t =
+  type _ format =
+    | String : string format
+    | Bytes : bytes format
+    | Char : char option format
+    | Byte : int option format
+    | Lines : string list format
+
+  type 'a t =
     { name : string
-    ; content : string
+    ; content : 'a
     }
 
   let get_name { name; _ } = name
+  let get_content { content; _ } = content
 
-  let get_content { content; _ } ~(format : [ `String ]) =
-    match format with
-    | `String -> content
-  ;;
-
-  (* TODO: Support other formats *)
-  let read file ~(format : [ `String ]) =
-    let _ = format in
+  let read
+    : type a.
+      string
+      -> format:a format
+      -> (a t, [> Error.read_error | Error.file_not_found ]) result
+    =
+    fun file ~format ->
     try
-      let content = In_channel.with_open_bin file In_channel.input_all in
-      Ok { content; name = file }
+      match format with
+      | String ->
+        let content = In_channel.with_open_bin file In_channel.input_all in
+        Ok { name = file; content }
+      | Bytes ->
+        let content =
+          In_channel.with_open_bin file In_channel.input_all |> Bytes.of_string
+        in
+        Ok { name = file; content }
+      | Char ->
+        let content = In_channel.with_open_text file In_channel.input_char in
+        Ok { name = file; content }
+      | Byte ->
+        let content = In_channel.with_open_bin file In_channel.input_byte in
+        Ok { name = file; content }
+      | Lines ->
+        let content = In_channel.with_open_text file In_channel.input_lines in
+        Ok { name = file; content }
     with
-    | _exn -> Error (`Error_reading_file file)
+    | _ -> Error (`Error_reading_file file)
   ;;
 
   let read_to_string file =
-    match read file ~format:`String with
+    match read file ~format:String with
     | Ok { content; _ } -> Ok content
     | Error e -> Error e
   ;;
@@ -112,7 +134,7 @@ module Dir = struct
 
   type t = { path : Fpath.t }
   type entry =
-    | File of File.t
+    | File : 'a File.t -> entry
     | Directory of t
 
   let get_name { path } = Fpath.basename path
