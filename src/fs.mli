@@ -277,14 +277,17 @@ module Dir : sig
 
       {[
         match Dir.exists "mydir" with
-        | Ok true -> print_endline "Directory exists"
-        | Ok false -> print_endline "Directory does not exist"
+        | Ok exists ->
+          if exists then
+            print_endline "Directory exists"
+          else
+            print_endline "Directory does not exist"
         | Error e -> print_endline (Dir.Error.to_string e)
       ]} *)
   val exists : string -> (bool, [> Error.read_error ]) result
 
   module Entry : sig
-    (** Gets the name of a directory entry, whether file or directory *)
+    (** Gets the name of a directory entry, whether it's a file or directory *)
     val get_name : entry -> string
 
     (** Returns true if the entry is a file *)

@@ -41,9 +41,9 @@ module File = struct
         * int
         * int
 
-  type 'a t =
+  type 'format t =
     { name : string
-    ; content : 'a
+    ; content : 'format
     }
 
   let get_name { name; _ } = name
