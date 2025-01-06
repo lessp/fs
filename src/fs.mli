@@ -216,18 +216,6 @@ module Dir : sig
     -> unit
     -> (unit, [> Error.write_error ]) result
 
-  (* val read : string -> (t, [> Error.read_error | Error.dir_not_found ]) result *)
-  (** Opens and reads a directory.
-
-      Examples:
-
-      {[
-        match Dir.read "mydir" with
-        | Ok dir ->
-          List.iter (fun entry -> print_endline (Dir.Entry.get_name entry)) (Dir.list dir)
-        | Error e -> print_endline (Dir.Error.to_string e)
-      ]} *)
-
   (** Lists all entries in the directory.
 
       Examples:
