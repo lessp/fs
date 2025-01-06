@@ -13,7 +13,7 @@
  (name fs)
  (synopsis "A simple file system module")
  (description "Easy to use file system module")
- (depends ocaml dune)
+ (depends ocaml dune bos fpath ocaml-lsp-server)
  (tags
   (topics fs ocaml file-system)))
 
