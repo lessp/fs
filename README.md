@@ -1,6 +1,6 @@
 # Fs
 
-`Fs` aims to expose a simpler filesystem interface for OCaml.
+`Fs` aims to expose a simple filesystem interface for OCaml.
 
 ## Installation
 
