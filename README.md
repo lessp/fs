@@ -10,7 +10,7 @@
     - [Create a file](#create-a-file)
     - [Read a file](#read-a-file)
   - [Dir](#dir)
-    - [Create a directory](#create-a-directory) 
+    - [Create a directory](#create-a-directory)
     - [List a directory](#list-a-directory)
 - [License](#license)
 
@@ -71,7 +71,7 @@ match Fs.Dir.create "hello/nested" ~recursive:true () with
 #### List a directory
 
 ```ocaml
-match Fs.Dir.list "hello" with
+match Fs.Dir.list "hello" () with
 | Ok files -> List.iter print_endline files
 | Error e -> print_endline (Fs.Dir.Error.to_string e)
 ```
