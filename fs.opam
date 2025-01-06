@@ -14,7 +14,6 @@ depends: [
   "dune" {>= "3.10"}
   "bos"
   "fpath"
-  "ocaml-lsp-server"
   "odoc" {with-doc}
 ]
 build: [

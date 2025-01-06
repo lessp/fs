@@ -142,8 +142,7 @@ module Dir = struct
     let to_string = function
       | `Error_reading_directory dir -> Printf.sprintf "Error reading directory: %s" dir
       | `Error_creating_directory dir -> Printf.sprintf "Error creating directory: %s" dir
-      | `Error_deleting_directory dir ->
-        Printf.sprintf "Error deleting\n      directory: %s" dir
+      | `Error_deleting_directory dir -> Printf.sprintf "Error deleting directory: %s" dir
       | `Directory_not_found dir -> Printf.sprintf "Directory not found: %s" dir
       | `Directory_already_exists dir -> Printf.sprintf "Directory already exists: %s" dir
       | `Directory_not_empty dir -> Printf.sprintf "Directory not empty: %s" dir

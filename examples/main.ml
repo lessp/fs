@@ -96,11 +96,12 @@ let test_dirs () =
   let () =
     match Dir.list "example" () with
     | Ok entries ->
-      List.iter
-        (function
-          | Dir.File file -> Printf.printf "File: %s\n" (File.get_name file)
-          | Dir.Directory dir -> Printf.printf "Directory: %s\n" (Dir.get_name dir))
-        entries
+      entries |> List.iter (fun entry -> print_endline (Dir.Entry.get_name entry));
+      (* or *)
+      entries
+      |> List.iter (function
+        | Dir.File file -> Printf.printf "File: %s\n" (File.get_name file)
+        | Dir.Directory dir -> Printf.printf "Directory: %s\n" (Dir.get_name dir))
     | Error e -> Printf.printf "Error: %s\n" (Dir.Error.to_string e)
   in
 

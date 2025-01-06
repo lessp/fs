@@ -2,3 +2,7 @@
  (public_name fs)
  (name main)
  (libraries fs))
+
+(executable
+ (name dir)
+ (libraries fs))
