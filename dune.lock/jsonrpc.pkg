@@ -1,0 +1,17 @@
+(version 1.20.1)
+
+(build
+ (progn
+  (when
+   %{pkg-self:dev}
+   (run dune subst))
+  (run dune build -p %{pkg-self:name} -j %{jobs} @install)))
+
+(depends dune ocaml)
+
+(source
+ (fetch
+  (url
+   https://github.com/ocaml/ocaml-lsp/releases/download/1.20.1/lsp-1.20.1.tbz)
+  (checksum
+   sha256=27ee54389a46701012a612dccd1f6f29ff353e348c7ba6de0fee37767dba3921)))

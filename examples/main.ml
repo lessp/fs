@@ -1,62 +1,101 @@
 open Fs
 
-let () =
-  (* Write *)
-  match File.write "my-test.txt" ~contents:(`String "Hello, world!") with
-  | Ok () -> Printf.printf "File written successfully\n"
-  | Error e -> Printf.printf "Error writing file: %s" (Error.to_string e)
+(** Example usage of the File module *)
+let test_files () =
+  (* Write a string to a file *)
+  let () =
+    match File.write "example.txt" ~contents:(`String "Hello, World!") with
+    | Ok () -> Printf.printf "File written successfully\n"
+    | Error e -> Printf.printf "Error: %s\n" (File.Error.to_string e)
+  in
 
-let () =
-  (* Read - Fail *)
-  match File.read "my-test-does-not-exist.txt" ~format:`String with
-  | Ok f -> Printf.printf "File read successfully: %s\n" (File.get_name f)
-  | Error e -> Printf.printf "%s\n" (Error.to_string e)
+  (* Read the file contents *)
+  let () =
+    match File.read_to_string "example.txt" with
+    | Ok content -> Printf.printf "File content: %s\n" content
+    | Error e -> Printf.printf "Error: %s\n" (File.Error.to_string e)
+  in
 
-let () =
-  (* Read - Success *)
-  match File.read "my-test.txt" ~format:`String with
-  | Ok f ->
-      Printf.printf "File read successfully: %s\n" (File.get_name f);
-      Printf.printf "File contents: %s\n" (File.get_content f ~format:`String)
-  | Error e -> Printf.printf "%s\n" (Error.to_string e)
+  (* Check if a file exists *)
+  let () =
+    match File.exists "example.txt" with
+    | Ok true -> Printf.printf "File exists\n"
+    | Ok false -> Printf.printf "File does not exist\n"
+    | Error e -> Printf.printf "Error: %s\n" (File.Error.to_string e)
+  in
 
-let () =
-  (* Read to string *)
-  match File.read_to_string "my-test.txt" with
-  | Ok s -> Printf.printf "File read successfully: %s\n" s
-  | Error e -> Printf.printf "Error reading file: %s\n" (Error.to_string e)
+  (* Clean up *)
+  let () =
+    match File.delete "example.txt" with
+    | Ok () -> Printf.printf "File deleted successfully\n"
+    | Error e -> Printf.printf "Error: %s\n" (File.Error.to_string e)
+  in
 
-let () =
-  (* Create *)
-  match File.create "my-test.txt" () with
-  | Ok () -> Printf.printf "File created successfully\n"
-  | Error e -> Printf.printf "Error creating file: %s\n" (Error.to_string e)
-
-let () =
-  (* Delete *)
-  match File.delete "my-test.txt" with
-  | Ok () -> Printf.printf "File deleted successfully\n"
-  | Error e -> Printf.printf "Error deleting file: %s" (Error.to_string e)
-
-(* Bytes *)
-let () =
+  (* Write bytes to a file *)
   let () =
     match
-      File.write "my-test.txt"
-        ~contents:(`Bytes (Bytes.of_string "Hello, World, in bytes!"))
+      File.write "example.txt" ~contents:(`Bytes (Bytes.of_string "Hello, World!"))
     with
     | Ok () -> Printf.printf "File written successfully\n"
-    | Error e -> Printf.printf "Error writing file: %s" (Error.to_string e)
+    | Error e -> Printf.printf "Error: %s\n" (File.Error.to_string e)
   in
 
+  (* Read the file contents *)
   let () =
-    match File.read "my-test.txt" ~format:`String with
-    | Ok f ->
-        Printf.printf "File read successfully: %s\n" (File.get_name f);
-        Printf.printf "File contents: %s\n" (File.get_content f ~format:`String)
-    | Error e -> Printf.printf "%s\n" (Error.to_string e)
+    match File.read_to_string "example.txt" with
+    | Ok content -> Printf.printf "File content: %s\n" content
+    | Error e -> Printf.printf "Error: %s\n" (File.Error.to_string e)
   in
 
-  match File.delete "my-test.txt" with
+  (* Clean up *)
+  match File.delete "example.txt" with
   | Ok () -> Printf.printf "File deleted successfully\n"
-  | Error e -> Printf.printf "Error deleting file: %s" (Error.to_string e)
+  | Error e -> Printf.printf "Error: %s\n" (File.Error.to_string e)
+;;
+
+(** Example usage of the Dir module *)
+let test_dirs () =
+  (* Create a directory with sub-directories *)
+  let () =
+    match Dir.create "example/nested" ~recursive:true () with
+    | Ok () -> Printf.printf "Directories created successfully\n"
+    | Error e -> Printf.printf "Error: %s\n" (Dir.Error.to_string e)
+  in
+
+  (* Check if directory exists *)
+  let () =
+    match Dir.exists "example" with
+    | Ok true -> Printf.printf "Directory exists\n"
+    | Ok false -> Printf.printf "Directory does not exist\n"
+    | Error e -> Printf.printf "Error: %s\n" (Dir.Error.to_string e)
+  in
+
+  (* Create a file in the directory *)
+  let () =
+    match File.write "example/file1.txt" ~contents:(`String "File 1") with
+    | Ok () -> Printf.printf "File written successfully\n"
+    | Error e -> Printf.printf "Error: %s\n" (File.Error.to_string e)
+  in
+
+  (* List directory contents *)
+  let () =
+    match Dir.list "example" () with
+    | Ok entries ->
+      List.iter
+        (function
+          | Dir.File file -> Printf.printf "File: %s\n" (File.get_name file)
+          | Dir.Directory dir -> Printf.printf "Directory: %s\n" (Dir.get_name dir))
+        entries
+    | Error e -> Printf.printf "Error: %s\n" (Dir.Error.to_string e)
+  in
+
+  (* Clean up *)
+  match Dir.delete "example" ~recursive:true () with
+  | Ok () -> Printf.printf "Directory deleted successfully\n"
+  | Error e -> Printf.printf "Error: %s\n" (Dir.Error.to_string e)
+;;
+
+let () =
+  test_files ();
+  test_dirs ()
+;;
