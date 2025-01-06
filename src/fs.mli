@@ -4,11 +4,13 @@ module File : sig
     type file_already_exists = [ `File_already_exists of string ]
     type read_error = [ `Error_reading_file of string ]
     type write_error = [ `Error_writing_to_file of string ]
+    type delete_error = [ `Error_deleting_file of string ]
     type t =
       [ read_error
-      | write_error
-      | file_not_found
+      | delete_error
       | file_already_exists
+      | file_not_found
+      | write_error
       ]
 
     val to_string : t -> string
@@ -21,7 +23,18 @@ module File : sig
     | Byte : int option format
     | Lines : string list format
 
-  type 'a t
+  type content =
+    | String of string
+    | Bytes of bytes
+    | Char of char
+    | Byte of int
+    | Substring of string * int * int
+    | Bigarray of
+        (char, Bigarray.int8_unsigned_elt, Bigarray.c_layout) Bigarray.Array1.t
+        * int
+        * int
+
+  type 'format t
 
   (** Returns the name of the file.
 
@@ -31,7 +44,7 @@ module File : sig
         let file = File.create "file.txt" () |> Result.get_ok in
         print_endline (File.get_name file)
       ]} *)
-  val get_name : 'a t -> string
+  val get_name : 'format t -> string
 
   (** Returns the contents of the file.
 
@@ -39,25 +52,25 @@ module File : sig
 
       {[
         let file =
-          File.create "file.txt" ~contents:(`String "Hello, World!") () |> Result.get_ok
+          File.create "file.txt" ~content:(String "Hello, World!") () |> Result.get_ok
         in
-        print_endline (File.get_content file ~format:`String)
+        print_endline (File.get_content file)
       ]} *)
-  val get_content : 'a t -> 'a
+  val get_content : 'format t -> 'format
 
   (** Reads the contents of a file. After reading, the file is closed.
 
       Examples:
 
       {[
-        match File.read "file.txt" ~format:`String with
-        | Ok file -> print_endline (File.get_content file `String)
+        match File.read "file.txt" ~format:String with
+        | Ok file -> print_endline (File.get_content file)
         | Error e -> print_endline (File.Error.to_string e)
       ]} *)
   val read
     :  string
-    -> format:'a format
-    -> ('a t, [> Error.read_error | Error.file_not_found ]) result
+    -> format:'format format
+    -> ('format t, [> Error.read_error | Error.file_not_found ]) result
 
   (** Reads the contents of a file as a string. After reading the file is closed.
 
@@ -82,23 +95,13 @@ module File : sig
       Examples:
 
       {[
-        match File.write "file.txt" ~contents:(`String "Hello, World!") with
+        match File.write "file.txt" ~content:(String "Hello, World!") with
         | Ok () -> print_endline "File written successfully"
         | Error e -> print_endline (File.Error.to_string e)
       ]} *)
   val write
     :  string
-    -> contents:
-         [ `String of string
-         | `Bytes of bytes
-         | `Char of char
-         | `Byte of int
-         | `Substring of string * int * int
-         | `Bigarray of
-           (char, Bigarray.int8_unsigned_elt, Bigarray.c_layout) Bigarray.Array1.t
-           * int
-           * int
-         ]
+    -> content:content
     -> (unit, [> Error.write_error | Error.file_not_found ]) result
 
   (** Creates a new file.
@@ -113,28 +116,18 @@ module File : sig
 
       {[
         match
-          File.create "file.txt" ~contents:(`String "Hello, world!") ~overwrite:true ()
+          File.create "file.txt" ~content:(String "Hello, world!") ~overwrite:true ()
         with
         | Ok file -> print_endline (File.get_name file)
         | Error e -> print_endline (File.Error.to_string e)
       ]} *)
   val create
     :  string
-    -> ?contents:
-         [ `String of string
-         | `Bytes of bytes
-         | `Char of char
-         | `Byte of int
-         | `Substring of string * int * int
-         | `Bigarray of
-           (char, Bigarray.int8_unsigned_elt, Bigarray.c_layout) Bigarray.Array1.t
-           * int
-           * int
-         ]
+    -> ?content:content
     -> ?overwrite:bool
     -> unit
     -> ( unit
-         , [> Error.write_error | Error.file_not_found | Error.file_already_exists ] )
+         , [> Error.read_error | Error.write_error | Error.file_already_exists ] )
          result
 
   (** Deletes a file.
@@ -146,7 +139,7 @@ module File : sig
         | Ok () -> print_endline "File deleted successfully"
         | Error e -> print_endline (File.Error.to_string e)
       ]} *)
-  val delete : string -> (unit, [> Error.file_not_found ]) result
+  val delete : string -> (unit, [> Error.delete_error ]) result
 
   (** Checks if a file exists.
 
@@ -165,6 +158,7 @@ module Dir : sig
   module Error : sig
     type read_error = [ `Error_reading_directory of string ]
     type write_error = [ `Error_creating_directory of string ]
+    type delete_error = [ `Error_deleting_directory of string ]
     type dir_not_found = [ `Directory_not_found of string ]
     type dir_already_exists = [ `Directory_already_exists of string ]
     type dir_not_empty = [ `Directory_not_empty of string ]
@@ -172,6 +166,7 @@ module Dir : sig
     type t =
       [ read_error
       | write_error
+      | delete_error
       | dir_not_found
       | dir_already_exists
       | dir_not_empty
@@ -182,7 +177,7 @@ module Dir : sig
 
   type t
   type entry =
-    | File : 'a File.t -> entry
+    | File : 'format File.t -> entry
     | Directory of t
 
   (** Returns the name of the directory.
@@ -286,7 +281,7 @@ module Dir : sig
     -> ?must_exist:bool
     -> ?recursive:bool
     -> unit
-    -> (unit, [> Error.read_error ]) result
+    -> (unit, [> Error.delete_error ]) result
 
   (** Checks if a directory exists.
 

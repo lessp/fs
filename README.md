@@ -12,20 +12,56 @@ opam pin fs https://github.com/lessp/fs.git
 
 For a full list of examples, see the [`examples/`](./examples) directory.
 
+### File
+
+#### Create a file
+
 ```ocaml
-open Fs
+match Fs.File.write "example.txt" ~content:(String "Hello, World!") with
+| Ok () -> print_endline "File written!"
+| Error e -> print_endline (Fs.File.Error.to_string e)
+```
 
-let () =
-    match File.write "my-test.txt" ~contents:(`String "Hello, world!") with
-    | Ok () -> Printf.printf "File written successfully\n"
-    | Error e -> Printf.printf "Error writing file: %s" (Fs.Error.to_string e)
+#### Read a file
 
-let () =
-    match File.read_to_string "my-test.txt" with
-    | Ok contents -> Printf.printf "File contents: %s\n" contents
-    | Error e -> Printf.printf "Error reading file: %s" (Fs.Error.to_string e)
-    ;;
-;;
+As a string:
+
+```ocaml
+match Fs.File.read_as_string "hello.txt" with
+| Ok content -> print_endline content
+| Error e -> print_endline (Fs.File.Error.to_string e)
+```
+
+In custom format:
+
+```ocaml
+match Fs.File.read "hello.txt" ~format:Bytes with
+| Ok content -> print_endline (Bytes.to_string content)
+| Error e -> print_endline (Fs.File.Error.to_string e)
+```
+
+### Dir
+
+#### Create a directory
+
+```ocaml
+match Fs.Dir.create "hello" () with
+| Ok () -> print_endline "Directory created!"
+| Error e -> print_endline (Fs.Dir.Error.to_string e)
+```
+
+```ocaml
+match Fs.Dir.create "hello/nested" ~recursive:true () with
+| Ok () -> print_endline "Directories created!"
+| Error e -> print_endline (Fs.Dir.Error.to_string e)
+```
+
+#### List a directory
+
+```ocaml
+match Fs.Dir.list "hello" with
+| Ok files -> List.iter print_endline files
+| Error e -> print_endline (Fs.Dir.Error.to_string e)
 ```
 
 ## License

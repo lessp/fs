@@ -4,7 +4,7 @@ open Fs
 let test_files () =
   (* Write a string to a file *)
   let () =
-    match File.write "example.txt" ~contents:(`String "Hello, World!") with
+    match File.write "example.txt" ~content:(String "Hello, World!") with
     | Ok () -> Printf.printf "File written successfully\n"
     | Error e -> Printf.printf "Error: %s\n" (File.Error.to_string e)
   in
@@ -33,9 +33,7 @@ let test_files () =
 
   (* Write bytes to a file *)
   let () =
-    match
-      File.write "example.txt" ~contents:(`Bytes (Bytes.of_string "Hello, World!"))
-    with
+    match File.write "example.txt" ~content:(Bytes (Bytes.of_string "Hello, World!")) with
     | Ok () -> Printf.printf "File written successfully\n"
     | Error e -> Printf.printf "Error: %s\n" (File.Error.to_string e)
   in
@@ -50,7 +48,7 @@ let test_files () =
 
   (* Write lines to a file *)
   let () =
-    match File.write "example.txt" ~contents:(`String "Hello\n ,World\n!") with
+    match File.write "example.txt" ~content:(String "Hello\n ,World\n!") with
     | Ok () -> Printf.printf "File written successfully\n"
     | Error e -> Printf.printf "Error: %s\n" (File.Error.to_string e)
   in
@@ -70,6 +68,7 @@ let test_files () =
 ;;
 
 (** Example usage of the Dir module *)
+
 let test_dirs () =
   (* Create a directory with sub-directories *)
   let () =
@@ -88,7 +87,7 @@ let test_dirs () =
 
   (* Create a file in the directory *)
   let () =
-    match File.write "example/file1.txt" ~contents:(`String "File 1") with
+    match File.write "example/file1.txt" ~content:(String "File 1") with
     | Ok () -> Printf.printf "File written successfully\n"
     | Error e -> Printf.printf "Error: %s\n" (File.Error.to_string e)
   in
