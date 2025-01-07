@@ -16,9 +16,9 @@ module File = struct
 
     let to_string e =
       match e with
-      | `Error_deleting_file msg -> Printf.sprintf "Error deleting msg: %s" msg
-      | `Error_reading_file msg -> Printf.sprintf "Error reading msg: %s" msg
-      | `Error_writing_to_file msg -> Printf.sprintf "Error writing to msg: %s" msg
+      | `Error_deleting_file msg -> Printf.sprintf "Error deleting file: %s" msg
+      | `Error_reading_file msg -> Printf.sprintf "Error reading file: %s" msg
+      | `Error_writing_to_file msg -> Printf.sprintf "Error writing to file: %s" msg
       | `File_already_exists msg -> Printf.sprintf "File already exists: %s" msg
       | `File_not_found msg -> Printf.sprintf "File not found: %s" msg
     ;;
@@ -133,11 +133,17 @@ module File = struct
   let write_byte name ~content = write name ~content:(Byte content) ~append:false ()
   let write_bytes name ~content = write name ~content:(Bytes content) ~append:false ()
   let write_char name ~content = write name ~content:(Char content) ~append:false ()
+  let write_lines name content =
+    write name ~content:(String (String.concat "\n" content)) ~append:false ()
+  ;;
 
   let append_string name ~content = append name ~content:(String content)
   let append_byte name ~content = append name ~content:(Byte content)
   let append_bytes name ~content = append name ~content:(Bytes content)
   let append_char name ~content = append name ~content:(Char content)
+  let append_lines name content =
+    append name ~content:(String (String.concat "\n" content))
+  ;;
 
   let exists name =
     match Bos.OS.File.exists (Fpath.v name) with

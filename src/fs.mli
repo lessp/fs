@@ -131,7 +131,7 @@ module File : sig
     -> content:content
     -> append:bool
     -> unit
-    -> (unit, [> Error.write_error | Error.file_not_found ]) result
+    -> (unit, [> Error.write_error ]) result
 
   (** Writes contents to a file as a string. After writing the file is closed.
 
@@ -142,10 +142,7 @@ module File : sig
         | Ok () -> print_endline "File written successfully"
         | Error e -> print_endline (File.Error.to_string e)
       ]} *)
-  val write_string
-    :  string
-    -> content:string
-    -> (unit, [> Error.write_error | Error.file_not_found ]) result
+  val write_string : string -> content:string -> (unit, [> Error.write_error ]) result
 
   (** Writes a single byte to a file. After writing the file is closed.
 
@@ -156,10 +153,7 @@ module File : sig
         | Ok () -> print_endline "File written successfully"
         | Error e -> print_endline (File.Error.to_string e)
       ]} *)
-  val write_byte
-    :  string
-    -> content:int
-    -> (unit, [> Error.write_error | Error.file_not_found ]) result
+  val write_byte : string -> content:int -> (unit, [> Error.write_error ]) result
 
   (** Writes contents to a file as bytes. After writing the file is closed.
 
@@ -170,10 +164,7 @@ module File : sig
         | Ok () -> print_endline "File written successfully"
         | Error e -> print_endline (File.Error.to_string e)
       ]} *)
-  val write_bytes
-    :  string
-    -> content:bytes
-    -> (unit, [> Error.write_error | Error.file_not_found ]) result
+  val write_bytes : string -> content:bytes -> (unit, [> Error.write_error ]) result
 
   (** Writes a single character to a file. After writing the file is closed.
 
@@ -184,10 +175,19 @@ module File : sig
         | Ok () -> print_endline "File written successfully"
         | Error e -> print_endline (File.Error.to_string e)
       ]} *)
-  val write_char
-    :  string
-    -> content:char
-    -> (unit, [> Error.write_error | Error.file_not_found ]) result
+  val write_char : string -> content:char -> (unit, [> Error.write_error ]) result
+
+  (** Write a list of strings to a file, joining them with newlines.
+      Each line will be terminated with a single newline character (\n).
+      The file is closed after writing.
+
+      Examples:
+      {[
+        match File.write_lines "output.txt" [ "line1"; "line2"; "line3" ] with
+        | Ok () -> print_endline "File written successfully"
+        | Error e -> print_endline (File.Error.to_string e)
+      ]} *)
+  val write_lines : string -> string list -> (unit, [> Error.write_error ]) result
 
   (** Appends content to a file. After writing the file is closed.
 
@@ -198,10 +198,7 @@ module File : sig
         | Ok () -> print_endline "File written successfully"
         | Error e -> print_endline (File.Error.to_string e)
       ]} *)
-  val append
-    :  string
-    -> content:content
-    -> (unit, [> Error.write_error | Error.file_not_found ]) result
+  val append : string -> content:content -> (unit, [> Error.write_error ]) result
 
   (** Appends a string to a file. After writing the file is closed.
 
@@ -212,10 +209,7 @@ module File : sig
         | Ok () -> print_endline "File written successfully"
         | Error e -> print_endline (File.Error.to_string e)
       ]} *)
-  val append_string
-    :  string
-    -> content:string
-    -> (unit, [> Error.write_error | Error.file_not_found ]) result
+  val append_string : string -> content:string -> (unit, [> Error.write_error ]) result
 
   (** Appends a single byte to a file. After writing the file is closed.
 
@@ -226,10 +220,7 @@ module File : sig
         | Ok () -> print_endline "File written successfully"
         | Error e -> print_endline (File.Error.to_string e)
       ]} *)
-  val append_byte
-    :  string
-    -> content:int
-    -> (unit, [> Error.write_error | Error.file_not_found ]) result
+  val append_byte : string -> content:int -> (unit, [> Error.write_error ]) result
 
   (** Appends bytes to a file. After writing the file is closed.
 
@@ -240,10 +231,7 @@ module File : sig
         | Ok () -> print_endline "File written successfully"
         | Error e -> print_endline (File.Error.to_string e)
       ]} *)
-  val append_bytes
-    :  string
-    -> content:bytes
-    -> (unit, [> Error.write_error | Error.file_not_found ]) result
+  val append_bytes : string -> content:bytes -> (unit, [> Error.write_error ]) result
 
   (** Appends a single character to a file. After writing the file is closed.
 
@@ -254,10 +242,37 @@ module File : sig
         | Ok () -> print_endline "File written successfully"
         | Error e -> print_endline (File.Error.to_string e)
       ]} *)
-  val append_char
-    :  string
-    -> content:char
-    -> (unit, [> Error.write_error | Error.file_not_found ]) result
+  val append_char : string -> content:char -> (unit, [> Error.write_error ]) result
+
+  (** Appends a list of strings to a file, joining them with newlines.
+      Each line will be terminated with a single newline character (\n).
+      The file is closed after writing.
+
+      Examples:
+      {[
+        match File.append_lines "output.txt" [ "line1"; "line2"; "line3" ] with
+        | Ok () -> print_endline "File written successfully"
+        | Error e -> print_endline (File.Error.to_string e)
+      ]} *)
+  val append_lines : string -> string list -> (unit, [> Error.write_error ]) result
+
+  (** Creates a new file. If the file already exists, an error is returned.
+
+      Examples:
+
+      {[
+        match File.create "file.txt" () with
+        | Ok file -> print_endline (File.get_name file)
+        | Error e -> print_endline (File.Error.to_string e)
+      ]}
+
+      {[
+        match
+          File.create "file.txt" ~content:(String "Hello, world!") ~overwrite:true ()
+        with
+        | Ok file -> print_endline (File.get_name file)
+        | Error e -> print_endline (File.Error.to_string e)
+      ]} *)
 
   (** Creates a new file.
 
