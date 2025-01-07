@@ -4,11 +4,13 @@ open Fs
 let test_dir_path = "test_dir"
 let nested_dir_path = "test_dir/nested"
 let test_file_in_dir = "test_dir/file.txt"
+let nested_file_path = "test_dir/nested/file.txt"
 
 let setup_test_dir () =
   Dir.create test_dir_path () |> Result.get_ok;
   Dir.create nested_dir_path ~recursive:true () |> Result.get_ok;
-  File.write_string test_file_in_dir ~content:"test content\n" |> Result.get_ok
+  File.write_string test_file_in_dir ~content:"test content\n" |> Result.get_ok;
+  File.write_string nested_file_path ~content:"test content\n" |> Result.get_ok
 ;;
 
 let cleanup_test_dir () = Dir.delete test_dir_path ~recursive:true () |> Result.get_ok
@@ -77,6 +79,19 @@ let test_delete_dir_if_not_exists () =
   | Error e -> Alcotest.fail (Dir.Error.to_string e)
 ;;
 
+let test_delete_dir_if_exists_with_subdirs () =
+  setup_test_dir ();
+  match Dir.delete_if_exists test_dir_path ~recursive:false () with
+  | Ok `Directory_not_found ->
+    Alcotest.fail "Directory was expected to exist but was not found."
+  | Ok `Directory_deleted ->
+    Alcotest.fail "Directory should not have been deleted as it contains subdirectories and recursive is false"
+  | Error `Error_deleting_directory msg ->
+    (* This is the expected result *)
+    Alcotest.(check string) "Error message" msg "delete directory test_dir: Directory not empty"
+  | Error e -> Alcotest.fail (Dir.Error.to_string e)
+;;
+
 let () =
   run
     "Fs Directory Tests"
@@ -86,6 +101,7 @@ let () =
         ; test_case "Delete directory" `Quick test_dir_delete
         ; test_case "Delete directory if exists" `Quick test_delete_dir_if_exists
         ; test_case "Delete directory if not exists" `Quick test_delete_dir_if_not_exists
+        ; test_case "Delete directory if exists with subdirs" `Quick test_delete_dir_if_exists_with_subdirs
         ] )
     ]
 ;;
