@@ -3,6 +3,6 @@
  (name main)
  (libraries fs))
 
-(executable
- (name dir)
- (libraries fs))
+; (executable
+;  (name dir)
+;  (libraries fs))

@@ -4,14 +4,14 @@ open Fs
 let test_files () =
   (* Write a string to a file *)
   let () =
-    match File.write "example.txt" ~content:(String "Hello, World!") with
+    match File.write_string "example.txt" ~content:"Hello, World!" with
     | Ok () -> Printf.printf "File written successfully\n"
     | Error e -> Printf.printf "Error: %s\n" (File.Error.to_string e)
   in
 
   (* Read the file contents *)
   let () =
-    match File.read_to_string "example.txt" with
+    match File.read_string "example.txt" with
     | Ok content -> Printf.printf "File content: %s\n" content
     | Error e -> Printf.printf "Error: %s\n" (File.Error.to_string e)
   in
@@ -33,31 +33,29 @@ let test_files () =
 
   (* Write bytes to a file *)
   let () =
-    match File.write "example.txt" ~content:(Bytes (Bytes.of_string "Hello, World!")) with
+    match File.write_bytes "example.txt" ~content:(Bytes.of_string "Hello, World!") with
     | Ok () -> Printf.printf "File written successfully\n"
     | Error e -> Printf.printf "Error: %s\n" (File.Error.to_string e)
   in
 
   (* Read the file contents as bytes *)
   let () =
-    match File.read "example.txt" ~format:Bytes with
-    | Ok file ->
-      Printf.printf "File content: %s\n" (Bytes.to_string (File.get_content file))
+    match File.read_bytes "example.txt" with
+    | Ok bytes -> Printf.printf "File content: %s\n" (Bytes.to_string bytes)
     | Error e -> Printf.printf "Error: %s\n" (File.Error.to_string e)
   in
 
   (* Write lines to a file *)
   let () =
-    match File.write "example.txt" ~content:(String "Hello\n ,World\n!") with
+    match File.write_string "example.txt" ~content:"Hello\nWorld\n!" with
     | Ok () -> Printf.printf "File written successfully\n"
     | Error e -> Printf.printf "Error: %s\n" (File.Error.to_string e)
   in
 
   (* Read the file contents as lines *)
   let () =
-    match File.read "example.txt" ~format:Lines with
-    | Ok file ->
-      List.iter (fun line -> Printf.printf "Line: %s\n" line) (File.get_content file)
+    match File.read_lines "example.txt" with
+    | Ok lines -> lines |> List.iter (fun line -> Printf.printf "Line: %s\n" line)
     | Error e -> Printf.printf "Error: %s\n" (File.Error.to_string e)
   in
 
@@ -87,7 +85,7 @@ let test_dirs () =
 
   (* Create a file in the directory *)
   let () =
-    match File.write "example/file1.txt" ~content:(String "File 1") with
+    match File.write "example/file1.txt" ~content:(String "File 1") ~append:false () with
     | Ok () -> Printf.printf "File written successfully\n"
     | Error e -> Printf.printf "Error: %s\n" (File.Error.to_string e)
   in

@@ -5,6 +5,7 @@ module File = struct
     type read_error = [ `Error_reading_file of string ]
     type write_error = [ `Error_writing_to_file of string ]
     type delete_error = [ `Error_deleting_file of string ]
+
     type t =
       [ read_error
       | delete_error
@@ -15,11 +16,11 @@ module File = struct
 
     let to_string e =
       match e with
-      | `Error_deleting_file file -> Printf.sprintf "Error deleting file: %s" file
-      | `Error_reading_file file -> Printf.sprintf "Error reading file: %s" file
-      | `Error_writing_to_file file -> Printf.sprintf "Error writing to file: %s" file
-      | `File_already_exists file -> Printf.sprintf "File already exists: %s" file
-      | `File_not_found file -> Printf.sprintf "File not found: %s" file
+      | `Error_deleting_file msg -> Printf.sprintf "Error deleting msg: %s" msg
+      | `Error_reading_file msg -> Printf.sprintf "Error reading msg: %s" msg
+      | `Error_writing_to_file msg -> Printf.sprintf "Error writing to msg: %s" msg
+      | `File_already_exists msg -> Printf.sprintf "File already exists: %s" msg
+      | `File_not_found msg -> Printf.sprintf "File not found: %s" msg
     ;;
   end
 
@@ -63,7 +64,13 @@ module File = struct
         Ok { name = file; content }
       | Bytes ->
         let content =
-          In_channel.with_open_bin file In_channel.input_all |> Bytes.of_string
+          In_channel.with_open_bin file (fun ic ->
+            let length = Int64.to_int (In_channel.length ic) in
+            let buffer = Bytes.create length in
+            let actually_read = In_channel.really_input ic buffer 0 length in
+            match actually_read with
+            | Some () -> buffer
+            | None -> buffer)
         in
         Ok { name = file; content }
       | Char ->
@@ -80,16 +87,35 @@ module File = struct
     | _ -> Error (`Error_reading_file file)
   ;;
 
-  let read_to_string file =
+  let read_bytes file =
+    match read file ~format:Bytes with
+    | Ok { content; _ } -> Ok content
+    | Error e -> Error e
+  ;;
+
+  let read_lines file =
+    match read file ~format:Lines with
+    | Ok { content; _ } -> Ok content
+    | Error e -> Error e
+  ;;
+
+  let read_string file =
     match read file ~format:String with
     | Ok { content; _ } -> Ok content
     | Error e -> Error e
   ;;
 
-  let write name ~content =
+  let write name ~content ~append () =
+    let flags = [ Open_wronly; Open_creat; Open_binary ] in
+    let flags =
+      if append then
+        Open_append :: flags
+      else
+        Open_trunc :: flags
+    in
     try
       Ok
-        (Out_channel.with_open_bin name (fun oc ->
+        (Out_channel.with_open_gen flags 0o666 name (fun oc ->
            match content with
            | String s -> Out_channel.output_string oc s
            | Bytes b -> Out_channel.output_bytes oc b
@@ -101,6 +127,18 @@ module File = struct
     | _exn -> Error (`Error_writing_to_file name)
   ;;
 
+  let append name ~content = write name ~content ~append:true ()
+
+  let write_string name ~content = write name ~content:(String content) ~append:false ()
+  let write_byte name ~content = write name ~content:(Byte content) ~append:false ()
+  let write_bytes name ~content = write name ~content:(Bytes content) ~append:false ()
+  let write_char name ~content = write name ~content:(Char content) ~append:false ()
+
+  let append_string name ~content = append name ~content:(String content)
+  let append_byte name ~content = append name ~content:(Byte content)
+  let append_bytes name ~content = append name ~content:(Bytes content)
+  let append_char name ~content = append name ~content:(Char content)
+
   let exists name =
     match Bos.OS.File.exists (Fpath.v name) with
     | Ok exists -> Ok exists
@@ -110,7 +148,8 @@ module File = struct
   let create name ?(content = String "") ?(overwrite = false) () =
     match overwrite, exists name with
     | false, Ok true -> Error (`File_already_exists name)
-    | true, Ok false | true, Ok true | false, Ok false -> write name ~content
+    | true, Ok false | true, Ok true | false, Ok false ->
+      write name ~content ~append:false ()
     | _, Error e -> Error e
   ;;
 
@@ -118,6 +157,13 @@ module File = struct
     match Bos.OS.File.delete (Fpath.v name) with
     | Ok () -> Ok ()
     | Error (`Msg msg) -> Error (`Error_deleting_file msg)
+  ;;
+
+  let delete_if_exists name =
+    match exists name with
+    | Ok true -> delete name |> Result.map (fun _ -> `File_deleted)
+    | Ok false -> Ok `File_not_found
+    | Error e -> Error e
   ;;
 end
 
@@ -199,6 +245,13 @@ module Dir = struct
     | Error (`Msg msg) -> Error (`Error_deleting_directory msg)
   ;;
 
+  let delete_if_exists name ?(recursive = false) () =
+    match exists name with
+    | Ok true -> delete name ~recursive () |> Result.map (fun _ -> `Directory_deleted)
+    | Ok false -> Ok `Directory_not_found
+    | Error e -> Error e
+  ;;
+
   module Entry = struct
     let get_name = function
       | File f -> File.get_name f
@@ -209,6 +262,7 @@ module Dir = struct
       | File _ -> true
       | Directory _ -> false
     ;;
+
     let is_directory = function
       | File _ -> false
       | Directory _ -> true

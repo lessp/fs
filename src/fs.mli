@@ -5,6 +5,7 @@ module File : sig
     type read_error = [ `Error_reading_file of string ]
     type write_error = [ `Error_writing_to_file of string ]
     type delete_error = [ `Error_deleting_file of string ]
+
     type t =
       [ read_error
       | delete_error
@@ -72,21 +73,47 @@ module File : sig
     -> format:'format format
     -> ('format t, [> Error.read_error | Error.file_not_found ]) result
 
+  (** Reads the contents of a file as bytes. After reading the file is closed.
+
+      Examples:
+
+      {[
+        match File.read_bytes "file.txt" with
+        | Ok bytes -> print_endline (Bytes.to_string (File.get_content bytes))
+        | Error e -> print_endline (File.Error.to_string e)
+      ]} *)
+  val read_bytes : string -> (bytes, [> Error.read_error | Error.file_not_found ]) result
+
+  (** Reads the contents of a file as lines.
+      Newline characters that terminate lines are not included in the returned strings.  Empty lines produce empty strings.
+      After reading the file is closed.
+
+      Examples:
+
+      {[
+        match File.read_lines "file.txt" with
+        | Ok lines -> List.iter print_endline lines
+        | Error e -> print_endline (File.Error.to_string e)
+      ]} *)
+  val read_lines
+    :  string
+    -> (string list, [> Error.read_error | Error.file_not_found ]) result
+
   (** Reads the contents of a file as a string. After reading the file is closed.
 
       Examples:
 
       {[
-        match File.read_to_string "file.txt" with
+        match File.read_string "file.txt" with
         | Ok content -> print_endline content
         | Error e -> print_endline (File.Error.to_string e)
       ]}
 
       {[
-        let contents = File.read_as_string "file.txt" |> Result.get_ok in
+        let contents = File.read_string "file.txt" |> Result.get_ok in
         print_endline contents
       ]} *)
-  val read_to_string
+  val read_string
     :  string
     -> (string, [> Error.read_error | Error.file_not_found ]) result
 
@@ -102,6 +129,134 @@ module File : sig
   val write
     :  string
     -> content:content
+    -> append:bool
+    -> unit
+    -> (unit, [> Error.write_error | Error.file_not_found ]) result
+
+  (** Writes contents to a file as a string. After writing the file is closed.
+
+      Examples:
+
+      {[
+        match File.write_string "file.txt" ~content:"Hello, World!" with
+        | Ok () -> print_endline "File written successfully"
+        | Error e -> print_endline (File.Error.to_string e)
+      ]} *)
+  val write_string
+    :  string
+    -> content:string
+    -> (unit, [> Error.write_error | Error.file_not_found ]) result
+
+  (** Writes a single byte to a file. After writing the file is closed.
+
+      Examples:
+
+      {[
+        match File.write_byte "file.txt" ~content:65 with
+        | Ok () -> print_endline "File written successfully"
+        | Error e -> print_endline (File.Error.to_string e)
+      ]} *)
+  val write_byte
+    :  string
+    -> content:int
+    -> (unit, [> Error.write_error | Error.file_not_found ]) result
+
+  (** Writes contents to a file as bytes. After writing the file is closed.
+
+      Examples:
+
+      {[
+        match File.write_bytes "file.txt" ~content:(Bytes.of_string "Hello, World!") with
+        | Ok () -> print_endline "File written successfully"
+        | Error e -> print_endline (File.Error.to_string e)
+      ]} *)
+  val write_bytes
+    :  string
+    -> content:bytes
+    -> (unit, [> Error.write_error | Error.file_not_found ]) result
+
+  (** Writes a single character to a file. After writing the file is closed.
+
+      Examples:
+
+      {[
+        match File.write_char "file.txt" ~content:'A' with
+        | Ok () -> print_endline "File written successfully"
+        | Error e -> print_endline (File.Error.to_string e)
+      ]} *)
+  val write_char
+    :  string
+    -> content:char
+    -> (unit, [> Error.write_error | Error.file_not_found ]) result
+
+  (** Appends content to a file. After writing the file is closed.
+
+      Examples:
+
+      {[
+        match File.append "file.txt" ~content:(String "Hello, World!") with
+        | Ok () -> print_endline "File written successfully"
+        | Error e -> print_endline (File.Error.to_string e)
+      ]} *)
+  val append
+    :  string
+    -> content:content
+    -> (unit, [> Error.write_error | Error.file_not_found ]) result
+
+  (** Appends a string to a file. After writing the file is closed.
+
+      Examples:
+
+      {[
+        match File.append_string "file.txt" ~content:"Hello, World!" with
+        | Ok () -> print_endline "File written successfully"
+        | Error e -> print_endline (File.Error.to_string e)
+      ]} *)
+  val append_string
+    :  string
+    -> content:string
+    -> (unit, [> Error.write_error | Error.file_not_found ]) result
+
+  (** Appends a single byte to a file. After writing the file is closed.
+
+      Examples:
+
+      {[
+        match File.append_byte "file.txt" ~content:65 with
+        | Ok () -> print_endline "File written successfully"
+        | Error e -> print_endline (File.Error.to_string e)
+      ]} *)
+  val append_byte
+    :  string
+    -> content:int
+    -> (unit, [> Error.write_error | Error.file_not_found ]) result
+
+  (** Appends bytes to a file. After writing the file is closed.
+
+      Examples:
+
+      {[
+        match File.append_bytes "file.txt" ~content:(Bytes.of_string "Hello, World!") with
+        | Ok () -> print_endline "File written successfully"
+        | Error e -> print_endline (File.Error.to_string e)
+      ]} *)
+  val append_bytes
+    :  string
+    -> content:bytes
+    -> (unit, [> Error.write_error | Error.file_not_found ]) result
+
+  (** Appends a single character to a file. After writing the file is closed.
+
+      Examples:
+
+      {[
+        match File.append_char "file.txt" ~content:'A' with
+        | Ok () -> print_endline "File written successfully"
+        | Error e -> print_endline (File.Error.to_string e)
+      ]} *)
+  val append_char
+    :  string
+    -> content:char
     -> (unit, [> Error.write_error | Error.file_not_found ]) result
 
   (** Creates a new file.
@@ -128,6 +283,22 @@ module File : sig
     -> unit
     -> ( unit
          , [> Error.read_error | Error.write_error | Error.file_already_exists ] )
+         result
+
+  (** Deletes a file if it exists.
+
+      Examples:
+
+      {[
+        match File.delete_if_exists "file.txt" with
+        | Ok `File_not_found -> print_endline "File does not exist"
+        | Ok `File_deleted -> print_endline "File deleted"
+        | Error e -> print_endline (File.Error.to_string e)
+      ]} *)
+  val delete_if_exists
+    :  string
+    -> ( [ `File_not_found | `File_deleted ]
+         , [> Error.read_error | Error.delete_error ] )
          result
 
   (** Deletes a file.
@@ -247,6 +418,31 @@ module Dir : sig
     -> ?dotfiles:bool
     -> unit
     -> (entry list, [> Error.dir_not_found | Error.read_error ]) result
+
+  (** Deletes a directory if it exists. If recursive is true (defaults to false), deletes all contents recursively.
+
+      Examples:
+
+      {[
+        match Dir.delete_if_exists "mydir" () with
+        | Ok `Directory_not_found -> print_endline "Directory does not exist"
+        | Ok `Directory_deleted -> print_endline "Directory deleted"
+        | Error e -> print_endline (Dir.Error.to_string e)
+      ]}
+
+      {[
+        (* Delete directory and all contents *)
+        match Dir.delete_if_exists "mydir" ~recursive:true () with
+        | Ok _ -> print_endline "Directory and contents deleted or did not exist"
+        | Error e -> print_endline (Dir.Error.to_string e)
+      ]} *)
+  val delete_if_exists
+    :  string
+    -> ?recursive:bool
+    -> unit
+    -> ( [ `Directory_not_found | `Directory_deleted ]
+         , [> Error.read_error | Error.delete_error ] )
+         result
 
   (** Deletes a directory. If recursive is true (defaults to false), deletes all contents recursively.
 

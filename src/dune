@@ -1,3 +1,4 @@
 (library
  (name fs)
+ (wrapped true)
  (libraries bos fpath))

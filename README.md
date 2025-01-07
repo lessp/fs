@@ -1,4 +1,4 @@
-> [!NOTE]  
+> [!NOTE]
 > Exploratory, API subject to change. Suggestions and PRs are always welcome.
 
 # Fs
@@ -29,10 +29,16 @@ For a full list of examples, see the [`examples/`](./examples) directory.
 
 ### File
 
-#### Create a file
+#### Create and write to a file
 
 ```ocaml
 match Fs.File.write "example.txt" ~content:(String "Hello, World!") with
+| Ok () -> print_endline "File written!"
+| Error e -> print_endline (Fs.File.Error.to_string e)
+```
+
+```ocaml
+match Fs.File.append_string "example.txt" ~content:"Hello, World!" with
 | Ok () -> print_endline "File written!"
 | Error e -> print_endline (Fs.File.Error.to_string e)
 ```
@@ -42,12 +48,12 @@ match Fs.File.write "example.txt" ~content:(String "Hello, World!") with
 As a string:
 
 ```ocaml
-match Fs.File.read_as_string "hello.txt" with
+match Fs.File.read_string "hello.txt" with
 | Ok content -> print_endline content
 | Error e -> print_endline (Fs.File.Error.to_string e)
 ```
 
-In custom format:
+Using a custom format:
 
 ```ocaml
 match Fs.File.read "hello.txt" ~format:Bytes with

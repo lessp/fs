@@ -14,6 +14,7 @@ depends: [
   "dune" {>= "3.10"}
   "bos"
   "fpath"
+  "alcotest"
   "odoc" {with-doc}
 ]
 build: [

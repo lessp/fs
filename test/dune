@@ -1,0 +1,7 @@
+(test
+ (name test_fs_file)
+ (libraries alcotest fs))
+
+(test
+ (name test_fs_dir)
+ (libraries alcotest fs))
