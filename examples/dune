@@ -1,3 +1,3 @@
 (executables
- (names main config csv backup diff)
+ (names main csv)
  (libraries fs))
