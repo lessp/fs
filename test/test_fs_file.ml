@@ -46,7 +46,7 @@ let test_read_nonexistent () =
       "is error reading file"
       true
       (match e with
-       | `Error_reading_file _ -> true
+       | `FileReadError _ -> true
        | _ -> false)
 ;;
 
@@ -56,20 +56,20 @@ let test_delete_if_exists () =
   File.write_string file_path ~content:"This is a test file." |> Result.get_ok;
 
   match File.delete_if_exists file_path with
-  | Ok `File_deleted ->
+  | Ok `FileDeleted ->
     Alcotest.(check bool)
       "File should not exist after deletion"
       false
       (File.exists file_path |> Result.get_ok)
-  | Ok `File_not_found -> Alcotest.fail "File was expected to exist but was not found."
+  | Ok `FileNotFound -> Alcotest.fail "File was expected to exist but was not found."
   | Error e -> Alcotest.fail (File.Error.to_string e)
 ;;
 
 let test_delete_if_not_exists () =
   let file_path = "nonexistent_file.txt" in
   match File.delete_if_exists file_path with
-  | Ok `File_not_found -> Alcotest.(check bool) "File should not exist" true true
-  | Ok `File_deleted -> Alcotest.fail "File was expected to not exist but was found."
+  | Ok `FileNotFound -> Alcotest.(check bool) "File should not exist" true true
+  | Ok `FileDeleted -> Alcotest.fail "File was expected to not exist but was found."
   | Error e -> Alcotest.fail (File.Error.to_string e)
 ;;
 

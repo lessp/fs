@@ -1,10 +1,10 @@
 module File = struct
   module Error = struct
-    type file_not_found = [ `File_not_found of string ]
-    type file_already_exists = [ `File_already_exists of string ]
-    type read_error = [ `Error_reading_file of string ]
-    type write_error = [ `Error_writing_to_file of string ]
-    type delete_error = [ `Error_deleting_file of string ]
+    type file_not_found = [ `FileNotFound of string ]
+    type file_already_exists = [ `FileAlreadyExists of string ]
+    type read_error = [ `FileReadError of string ]
+    type write_error = [ `FileWriteError of string ]
+    type delete_error = [ `FileDeleteError of string ]
 
     type t =
       [ read_error
@@ -14,13 +14,12 @@ module File = struct
       | write_error
       ]
 
-    let to_string e =
-      match e with
-      | `Error_deleting_file msg -> Printf.sprintf "Error deleting file: %s" msg
-      | `Error_reading_file msg -> Printf.sprintf "Error reading file: %s" msg
-      | `Error_writing_to_file msg -> Printf.sprintf "Error writing to file: %s" msg
-      | `File_already_exists msg -> Printf.sprintf "File already exists: %s" msg
-      | `File_not_found msg -> Printf.sprintf "File not found: %s" msg
+    let to_string = function
+      | `FileReadError msg -> Printf.sprintf "Error reading file: %s" msg
+      | `FileWriteError msg -> Printf.sprintf "Error writing to file: %s" msg
+      | `FileDeleteError msg -> Printf.sprintf "Error deleting file: %s" msg
+      | `FileAlreadyExists msg -> Printf.sprintf "File already exists: %s" msg
+      | `FileNotFound msg -> Printf.sprintf "File not found: %s" msg
     ;;
   end
 
@@ -83,8 +82,8 @@ module File = struct
         let content = In_channel.with_open_text file In_channel.input_lines in
         Ok { name = file; content }
     with
-    | Sys_error msg -> Error (`Error_reading_file msg)
-    | _ -> Error (`Error_reading_file file)
+    | Sys_error msg -> Error (`FileReadError msg)
+    | _ -> Error (`FileReadError file)
   ;;
 
   let read_bytes file =
@@ -124,7 +123,7 @@ module File = struct
            | Substring (s, i, j) -> Out_channel.output_substring oc s i j
            | Bigarray (a, i, j) -> Out_channel.output_bigarray oc a i j))
     with
-    | _exn -> Error (`Error_writing_to_file name)
+    | _exn -> Error (`FileWriteError name)
   ;;
 
   let append name ~content = write name ~content ~append:true ()
@@ -145,15 +144,48 @@ module File = struct
     append name ~content:(String (String.concat "\n" content))
   ;;
 
+  (*(1** Creates a temporary file for the duration of the function. The file is deleted after the function returns. *)
+
+  (*    Examples: *)
+
+  (*    {[ *)
+  (*      File.with_temp (fun file -> *)
+  (*        File.write_string file ~content:"Hello, World!" *)
+  (*        |> Result.map_error (fun e -> Error.to_string e) *)
+  (*        |> Result.get_ok) *)
+  (*    ]} *1) *)
+  (*val with_temp : (string -> ('a, [> Error.t ]) result) -> ('a, [> Error.t ]) result *)
+
+  (* (1* Create a temporary file with some content *1) *)
+  (* let write_temp_data data = *)
+  (*   let pat = "temp-%s.txt" in  (1* Pattern for temp filename *1) *)
+  (*   Bos.OS.File.with_tmp_output *)
+  (*     ~mode:0o600               (1* File permissions: user read/write only *1) *)
+  (*     ~dir:(Fpath.v "/tmp")     (1* Optional: specify directory *1) *)
+  (*     pat                       (1* Filename pattern *1) *)
+  (*     (fun path output data ->  (1* Function that uses the temp file *1) *)
+  (*       Bos.OS.File.write_lines path [data]) *)
+  (*     data                      (1* Data to pass to the function *1) *)
+
+  (* Usage example *)
+  (* let () = *)
+  (*   match write_temp_data "Hello, temporary file!" with *)
+  (*   | Ok () -> Printf.printf "Successfully wrote to temp file\n" *)
+  (*   | Error (`Msg e) -> Printf.printf "Error: %s\n" e *)
+
+  (* let with_temp f = *)
+  (*   Bos.OS.File.with_tmp_output "temp-%s.txt" (fun path output -> f path output) *)
+  (* ;; *)
+
   let exists name =
     match Bos.OS.File.exists (Fpath.v name) with
     | Ok exists -> Ok exists
-    | Error (`Msg msg) -> Error (`Error_reading_file msg)
+    | Error (`Msg msg) -> Error (`FileReadError msg)
   ;;
 
   let create name ?(content = String "") ?(overwrite = false) () =
     match overwrite, exists name with
-    | false, Ok true -> Error (`File_already_exists name)
+    | false, Ok true -> Error (`FileAlreadyExists name)
     | true, Ok false | true, Ok true | false, Ok false ->
       write name ~content ~append:false ()
     | _, Error e -> Error e
@@ -162,25 +194,25 @@ module File = struct
   let delete name =
     match Bos.OS.File.delete (Fpath.v name) with
     | Ok () -> Ok ()
-    | Error (`Msg msg) -> Error (`Error_deleting_file msg)
+    | Error (`Msg msg) -> Error (`FileDeleteError msg)
   ;;
 
   let delete_if_exists name =
     match exists name with
-    | Ok true -> delete name |> Result.map (fun _ -> `File_deleted)
-    | Ok false -> Ok `File_not_found
+    | Ok true -> delete name |> Result.map (fun _ -> `FileDeleted)
+    | Ok false -> Ok `FileNotFound
     | Error e -> Error e
   ;;
 end
 
 module Dir = struct
   module Error = struct
-    type read_error = [ `Error_reading_directory of string ]
-    type delete_error = [ `Error_deleting_directory of string ]
-    type write_error = [ `Error_creating_directory of string ]
-    type dir_not_found = [ `Directory_not_found of string ]
-    type dir_already_exists = [ `Directory_already_exists of string ]
-    type dir_not_empty = [ `Directory_not_empty of string ]
+    type read_error = [ `DirectoryReadError of string ]
+    type delete_error = [ `DirectoryDeleteError of string ]
+    type write_error = [ `DirectoryWriteError of string ]
+    type dir_not_found = [ `DirectoryNotFound of string ]
+    type dir_already_exists = [ `DirectoryAlreadyExists of string ]
+    type dir_not_empty = [ `DirectoryNotEmpty of string ]
 
     type t =
       [ read_error
@@ -192,12 +224,21 @@ module Dir = struct
       ]
 
     let to_string = function
-      | `Error_reading_directory dir -> Printf.sprintf "Error reading directory: %s" dir
-      | `Error_creating_directory dir -> Printf.sprintf "Error creating directory: %s" dir
-      | `Error_deleting_directory dir -> Printf.sprintf "Error deleting directory: %s" dir
-      | `Directory_not_found dir -> Printf.sprintf "Directory not found: %s" dir
-      | `Directory_already_exists dir -> Printf.sprintf "Directory already exists: %s" dir
-      | `Directory_not_empty dir -> Printf.sprintf "Directory not empty: %s" dir
+      | `DirectoryReadError msg -> Printf.sprintf "Error reading directory: %s"
+      msg
+      | `DirectoryDeleteError msg -> Printf.sprintf "Error deleting directory:
+        %s"
+      msg
+      | `DirectoryWriteError msg -> Printf.sprintf "Error writing to directory:
+        %s"
+      msg
+      | `DirectoryNotFound msg -> Printf.sprintf "Directory not found: %s" msg
+      | `DirectoryAlreadyExists msg -> Printf.sprintf "Directory already exists:
+        %s"
+      msg
+      | `DirectoryNotEmpty msg -> Printf.sprintf "Directory not empty: %s" msg
+
+
     ;;
   end
 
@@ -211,7 +252,7 @@ module Dir = struct
   let exists name =
     match Bos.OS.Dir.exists (Fpath.v name) with
     | Ok exists -> Ok exists
-    | Error (`Msg msg) -> Error (`Error_reading_directory msg)
+    | Error (`Msg msg) -> Error (`DirectoryReadError msg)
   ;;
 
   let create name ?(recursive = false) ?(mode = 0o777) () =
@@ -221,14 +262,14 @@ module Dir = struct
     | Ok true -> Ok ()
     (* Dir did exist, it's possible that it's a symlink. It's kept as is. *)
     | Ok false -> Ok ()
-    | Error (`Msg msg) -> Error (`Error_creating_directory msg)
+    | Error (`Msg msg) -> Error (`DirectoryWriteError msg)
   ;;
 
   let list path ?(dotfiles = false) () =
     let dir_path = Fpath.v path in
     match exists path with
     | Error e -> Error e
-    | Ok false -> Error (`Directory_not_found path)
+    | Ok false -> Error (`DirectoryNotFound path)
     | Ok true ->
       (match Bos.OS.Dir.contents ~dotfiles dir_path with
        | Ok entries ->
@@ -242,19 +283,19 @@ module Dir = struct
              entries
          in
          Ok entries_with_types
-       | Error (`Msg msg) -> Error (`Error_reading_directory msg))
+       | Error (`Msg msg) -> Error (`DirectoryReadError msg))
   ;;
 
   let delete name ?(must_exist = false) ?(recursive = false) () =
     match Bos.OS.Dir.delete ~must_exist ~recurse:recursive (Fpath.v name) with
     | Ok () -> Ok ()
-    | Error (`Msg msg) -> Error (`Error_deleting_directory msg)
+    | Error (`Msg msg) -> Error (`DirectoryDeleteError msg)
   ;;
 
   let delete_if_exists name ?(recursive = false) () =
     match exists name with
-    | Ok true -> delete name ~recursive () |> Result.map (fun _ -> `Directory_deleted)
-    | Ok false -> Ok `Directory_not_found
+    | Ok true -> delete name ~recursive () |> Result.map (fun _ -> `DirectoryDeleted)
+    | Ok false -> Ok `DirectoryNotFound
     | Error e -> Error e
   ;;
 

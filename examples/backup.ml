@@ -15,7 +15,7 @@ let backup_file path =
   if String.equal backup_content content then
     Ok "Backup verified successfully"
   else
-    Error (`Error_writing_to_file backup_path)
+    Error (`FileWriteError backup_path)
 ;;
 
 let () =

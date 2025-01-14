@@ -86,32 +86,27 @@ let compare_files a b =
 ;;
 
 let print_diff results =
-  List.iter
-    (fun { line_number; diff } ->
-      match diff with
-      | Added text ->
-        Printf.printf
-          "%3d: %s %s\n"
-          line_number
-          (colorize "+" `Green)
-          (colorize text `Green)
-      | Removed text ->
-        Printf.printf "%3d: %s %s\n" line_number (colorize "-" `Red) (colorize text `Red)
-      | Changed { old_text; new_text } ->
-        Printf.printf
-          "%3d: %s %s\n     %s %s\n"
-          line_number
-          (colorize "-" `Red)
-          (colorize old_text `Red)
-          (colorize "+" `Green)
-          (colorize new_text `Green)
-      | Unchanged text ->
-        Printf.printf
-          "%3d: %s %s\n"
-          line_number
-          (colorize " " `Grey)
-          (colorize text `Grey))
-    results
+  results
+  |> List.iter (fun { line_number; diff } ->
+    match diff with
+    | Added text ->
+      Printf.printf
+        "%3d: %s %s\n"
+        line_number
+        (colorize "+" `Green)
+        (colorize text `Green)
+    | Removed text ->
+      Printf.printf "%3d: %s %s\n" line_number (colorize "-" `Red) (colorize text `Red)
+    | Changed { old_text; new_text } ->
+      Printf.printf
+        "%3d: %s %s\n     %s %s\n"
+        line_number
+        (colorize "-" `Red)
+        (colorize old_text `Red)
+        (colorize "+" `Green)
+        (colorize new_text `Green)
+    | Unchanged text ->
+      Printf.printf "%3d: %s %s\n" line_number (colorize " " `Grey) (colorize text `Grey))
 ;;
 
 let demo_diff () =

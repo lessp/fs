@@ -59,12 +59,12 @@ let test_delete_dir_if_exists () =
   Dir.create dir_path () |> Result.get_ok;
 
   match Dir.delete_if_exists dir_path () with
-  | Ok `Directory_deleted ->
+  | Ok `DirectoryDeleted ->
     Alcotest.(check bool)
       "Directory should not exist after deletion"
       false
       (Dir.exists dir_path |> Result.get_ok)
-  | Ok `Directory_not_found ->
+  | Ok `DirectoryNotFound ->
     Alcotest.fail "Directory was expected to exist but was not found."
   | Error e -> Alcotest.fail (Dir.Error.to_string e)
 ;;
@@ -72,9 +72,9 @@ let test_delete_dir_if_exists () =
 let test_delete_dir_if_not_exists () =
   let dir_path = "nonexistent_dir" in
   match Dir.delete_if_exists dir_path () with
-  | Ok `Directory_not_found ->
+  | Ok `DirectoryNotFound ->
     Alcotest.(check bool) "Directory should not exist" true true
-  | Ok `Directory_deleted ->
+  | Ok `DirectoryDeleted ->
     Alcotest.fail "Directory was expected to not exist but was found."
   | Error e -> Alcotest.fail (Dir.Error.to_string e)
 ;;
@@ -82,11 +82,11 @@ let test_delete_dir_if_not_exists () =
 let test_delete_dir_if_exists_with_subdirs () =
   setup_test_dir ();
   match Dir.delete_if_exists test_dir_path ~recursive:false () with
-  | Ok `Directory_not_found ->
+  | Ok `DirectoryNotFound ->
     Alcotest.fail "Directory was expected to exist but was not found."
-  | Ok `Directory_deleted ->
+  | Ok `DirectoryDeleted ->
     Alcotest.fail "Directory should not have been deleted as it contains subdirectories and recursive is false"
-  | Error `Error_deleting_directory msg ->
+  | Error `DirectoryDeleteError msg ->
     (* This is the expected result *)
     Alcotest.(check string) "Error message" msg "delete directory test_dir: Directory not empty"
   | Error e -> Alcotest.fail (Dir.Error.to_string e)

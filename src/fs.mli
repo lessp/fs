@@ -1,10 +1,10 @@
 module File : sig
   module Error : sig
-    type file_not_found = [ `File_not_found of string ]
-    type file_already_exists = [ `File_already_exists of string ]
-    type read_error = [ `Error_reading_file of string ]
-    type write_error = [ `Error_writing_to_file of string ]
-    type delete_error = [ `Error_deleting_file of string ]
+    type file_not_found = [ `FileNotFound of string ]
+    type file_already_exists = [ `FileAlreadyExists of string ]
+    type read_error = [ `FileReadError of string ]
+    type write_error = [ `FileWriteError of string ]
+    type delete_error = [ `FileDeleteError of string ]
 
     type t =
       [ read_error
@@ -256,6 +256,29 @@ module File : sig
       ]} *)
   val append_lines : string -> string list -> (unit, [> Error.write_error ]) result
 
+  (*(1** Creates a temporary file for the duration of the function. The file is deleted after the function returns. *)
+
+  (*    Examples: *)
+
+  (*    {[ *)
+  (*      File.with_temp (fun file -> *)
+  (*        File.write_string file ~content:"Hello, World!" *)
+  (*        |> Result.map_error (fun e -> Error.to_string e) *)
+  (*        |> Result.get_ok) *)
+  (*    ]} *1) *)
+  (*val with_temp : (string -> ('a, [> Error.t ]) result) -> ('a, [> Error.t ]) result *)
+
+  (** Creates a temporary file for the duration of the function. The file is deleted after the function returns.
+
+      Examples:
+
+      {[
+        File.with_temp (fun file ->
+          File.write_string file ~content:"Hello, World!"
+          |> Result.map_error (fun e -> Error.to_string e)
+          |> Result.get_ok)
+      ]} *)
+
   (** Creates a new file. If the file already exists, an error is returned.
 
       Examples:
@@ -312,7 +335,7 @@ module File : sig
       ]} *)
   val delete_if_exists
     :  string
-    -> ( [ `File_not_found | `File_deleted ]
+    -> ( [ `FileNotFound | `FileDeleted ]
          , [> Error.read_error | Error.delete_error ] )
          result
 
@@ -342,12 +365,12 @@ end
 
 module Dir : sig
   module Error : sig
-    type read_error = [ `Error_reading_directory of string ]
-    type write_error = [ `Error_creating_directory of string ]
-    type delete_error = [ `Error_deleting_directory of string ]
-    type dir_not_found = [ `Directory_not_found of string ]
-    type dir_already_exists = [ `Directory_already_exists of string ]
-    type dir_not_empty = [ `Directory_not_empty of string ]
+    type read_error = [ `DirectoryReadError of string ]
+    type delete_error = [ `DirectoryDeleteError of string ]
+    type write_error = [ `DirectoryWriteError of string ]
+    type dir_not_found = [ `DirectoryNotFound of string ]
+    type dir_already_exists = [ `DirectoryAlreadyExists of string ]
+    type dir_not_empty = [ `DirectoryNotEmpty of string ]
 
     type t =
       [ read_error
@@ -366,14 +389,7 @@ module Dir : sig
     | File : 'format File.t -> entry
     | Directory of t
 
-  (** Returns the name of the directory.
-
-      Examples:
-
-      {[
-        let dir = Dir.create "mydir" () |> Result.get_ok in
-        print_endline (Dir.get_name dir)
-      ]} *)
+  (** Returns the name of the directory. *)
   val get_name : t -> string
 
   (** Creates a new directory. If recursive is true, creates parent directories
@@ -455,7 +471,7 @@ module Dir : sig
     :  string
     -> ?recursive:bool
     -> unit
-    -> ( [ `Directory_not_found | `Directory_deleted ]
+    -> ( [ `DirectoryNotFound | `DirectoryDeleted ]
          , [> Error.read_error | Error.delete_error ] )
          result
 
