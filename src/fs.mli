@@ -256,47 +256,6 @@ module File : sig
       ]} *)
   val append_lines : string -> string list -> (unit, [> Error.write_error ]) result
 
-  (*(1** Creates a temporary file for the duration of the function. The file is deleted after the function returns. *)
-
-  (*    Examples: *)
-
-  (*    {[ *)
-  (*      File.with_temp (fun file -> *)
-  (*        File.write_string file ~content:"Hello, World!" *)
-  (*        |> Result.map_error (fun e -> Error.to_string e) *)
-  (*        |> Result.get_ok) *)
-  (*    ]} *1) *)
-  (*val with_temp : (string -> ('a, [> Error.t ]) result) -> ('a, [> Error.t ]) result *)
-
-  (** Creates a temporary file for the duration of the function. The file is deleted after the function returns.
-
-      Examples:
-
-      {[
-        File.with_temp (fun file ->
-          File.write_string file ~content:"Hello, World!"
-          |> Result.map_error (fun e -> Error.to_string e)
-          |> Result.get_ok)
-      ]} *)
-
-  (** Creates a new file. If the file already exists, an error is returned.
-
-      Examples:
-
-      {[
-        match File.create "file.txt" () with
-        | Ok file -> print_endline (File.get_name file)
-        | Error e -> print_endline (File.Error.to_string e)
-      ]}
-
-      {[
-        match
-          File.create "file.txt" ~content:(String "Hello, world!") ~overwrite:true ()
-        with
-        | Ok file -> print_endline (File.get_name file)
-        | Error e -> print_endline (File.Error.to_string e)
-      ]} *)
-
   (** Creates a new file.
 
       Examples:
@@ -456,8 +415,8 @@ module Dir : sig
 
       {[
         match Dir.delete_if_exists "mydir" () with
-        | Ok `Directory_not_found -> print_endline "Directory does not exist"
-        | Ok `Directory_deleted -> print_endline "Directory deleted"
+        | Ok `DirectoryNotFound -> print_endline "Directory does not exist"
+        | Ok `DirectoryDeleted -> print_endline "Directory deleted"
         | Error e -> print_endline (Dir.Error.to_string e)
       ]}
 

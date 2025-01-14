@@ -72,8 +72,7 @@ let test_delete_dir_if_exists () =
 let test_delete_dir_if_not_exists () =
   let dir_path = "nonexistent_dir" in
   match Dir.delete_if_exists dir_path () with
-  | Ok `DirectoryNotFound ->
-    Alcotest.(check bool) "Directory should not exist" true true
+  | Ok `DirectoryNotFound -> Alcotest.(check bool) "Directory should not exist" true true
   | Ok `DirectoryDeleted ->
     Alcotest.fail "Directory was expected to not exist but was found."
   | Error e -> Alcotest.fail (Dir.Error.to_string e)
@@ -85,10 +84,15 @@ let test_delete_dir_if_exists_with_subdirs () =
   | Ok `DirectoryNotFound ->
     Alcotest.fail "Directory was expected to exist but was not found."
   | Ok `DirectoryDeleted ->
-    Alcotest.fail "Directory should not have been deleted as it contains subdirectories and recursive is false"
-  | Error `DirectoryDeleteError msg ->
+    Alcotest.fail
+      "Directory should not have been deleted as it contains subdirectories and \
+       recursive is false"
+  | Error (`DirectoryDeleteError msg) ->
     (* This is the expected result *)
-    Alcotest.(check string) "Error message" msg "delete directory test_dir: Directory not empty"
+    Alcotest.(check string)
+      "Error message"
+      msg
+      "delete directory test_dir: Directory not empty"
   | Error e -> Alcotest.fail (Dir.Error.to_string e)
 ;;
 
@@ -101,7 +105,10 @@ let () =
         ; test_case "Delete directory" `Quick test_dir_delete
         ; test_case "Delete directory if exists" `Quick test_delete_dir_if_exists
         ; test_case "Delete directory if not exists" `Quick test_delete_dir_if_not_exists
-        ; test_case "Delete directory if exists with subdirs" `Quick test_delete_dir_if_exists_with_subdirs
+        ; test_case
+            "Delete directory if exists with subdirs"
+            `Quick
+            test_delete_dir_if_exists_with_subdirs
         ] )
     ]
 ;;

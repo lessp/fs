@@ -144,39 +144,6 @@ module File = struct
     append name ~content:(String (String.concat "\n" content))
   ;;
 
-  (*(1** Creates a temporary file for the duration of the function. The file is deleted after the function returns. *)
-
-  (*    Examples: *)
-
-  (*    {[ *)
-  (*      File.with_temp (fun file -> *)
-  (*        File.write_string file ~content:"Hello, World!" *)
-  (*        |> Result.map_error (fun e -> Error.to_string e) *)
-  (*        |> Result.get_ok) *)
-  (*    ]} *1) *)
-  (*val with_temp : (string -> ('a, [> Error.t ]) result) -> ('a, [> Error.t ]) result *)
-
-  (* (1* Create a temporary file with some content *1) *)
-  (* let write_temp_data data = *)
-  (*   let pat = "temp-%s.txt" in  (1* Pattern for temp filename *1) *)
-  (*   Bos.OS.File.with_tmp_output *)
-  (*     ~mode:0o600               (1* File permissions: user read/write only *1) *)
-  (*     ~dir:(Fpath.v "/tmp")     (1* Optional: specify directory *1) *)
-  (*     pat                       (1* Filename pattern *1) *)
-  (*     (fun path output data ->  (1* Function that uses the temp file *1) *)
-  (*       Bos.OS.File.write_lines path [data]) *)
-  (*     data                      (1* Data to pass to the function *1) *)
-
-  (* Usage example *)
-  (* let () = *)
-  (*   match write_temp_data "Hello, temporary file!" with *)
-  (*   | Ok () -> Printf.printf "Successfully wrote to temp file\n" *)
-  (*   | Error (`Msg e) -> Printf.printf "Error: %s\n" e *)
-
-  (* let with_temp f = *)
-  (*   Bos.OS.File.with_tmp_output "temp-%s.txt" (fun path output -> f path output) *)
-  (* ;; *)
-
   let exists name =
     match Bos.OS.File.exists (Fpath.v name) with
     | Ok exists -> Ok exists
@@ -224,21 +191,15 @@ module Dir = struct
       ]
 
     let to_string = function
-      | `DirectoryReadError msg -> Printf.sprintf "Error reading directory: %s"
-      msg
-      | `DirectoryDeleteError msg -> Printf.sprintf "Error deleting directory:
-        %s"
-      msg
-      | `DirectoryWriteError msg -> Printf.sprintf "Error writing to directory:
-        %s"
-      msg
+      | `DirectoryReadError msg -> Printf.sprintf "Error reading directory: %s" msg
+      | `DirectoryDeleteError msg ->
+        Printf.sprintf "Error deleting directory:\n        %s" msg
+      | `DirectoryWriteError msg ->
+        Printf.sprintf "Error writing to directory:\n        %s" msg
       | `DirectoryNotFound msg -> Printf.sprintf "Directory not found: %s" msg
-      | `DirectoryAlreadyExists msg -> Printf.sprintf "Directory already exists:
-        %s"
-      msg
+      | `DirectoryAlreadyExists msg ->
+        Printf.sprintf "Directory already exists:\n        %s" msg
       | `DirectoryNotEmpty msg -> Printf.sprintf "Directory not empty: %s" msg
-
-
     ;;
   end
 
